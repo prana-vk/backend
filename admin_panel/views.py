@@ -146,7 +146,6 @@ def add_gi_location_view(request):
                 longitude=float(request.POST.get('longitude', 0)),
                 opening_time=request.POST.get('opening_time') or '09:00:00',
                 closing_time=request.POST.get('closing_time') or '18:00:00',
-                entry_fee=int(request.POST.get('entry_fee', 0)),
                 image=request.FILES.get('image')
             )
             messages.success(request, f'GI Location "{location.name}" added successfully!')
@@ -171,7 +170,6 @@ def edit_gi_location_view(request, location_id):
             location.longitude = float(request.POST.get('longitude', 0))
             location.opening_time = request.POST.get('opening_time') or '09:00:00'
             location.closing_time = request.POST.get('closing_time') or '18:00:00'
-            location.entry_fee = int(request.POST.get('entry_fee', 0))
             
             if request.FILES.get('image'):
                 location.image = request.FILES.get('image')
@@ -300,8 +298,7 @@ def bulk_add_data_view(request):
                         'latitude': 12.3052,
                         'longitude': 76.6551,
                         'opening_time': '10:00:00',
-                        'closing_time': '17:30:00',
-                        'entry_fee': 70
+                        'closing_time': '17:30:00'
                     },
                     {
                         'name': 'Hampi Ruins',
@@ -310,8 +307,7 @@ def bulk_add_data_view(request):
                         'latitude': 15.3350,
                         'longitude': 76.4600,
                         'opening_time': '06:00:00',
-                        'closing_time': '18:00:00',
-                        'entry_fee': 40
+                        'closing_time': '18:00:00'
                     },
                     {
                         'name': 'Jog Falls',
@@ -320,8 +316,7 @@ def bulk_add_data_view(request):
                         'latitude': 14.2291,
                         'longitude': 74.8127,
                         'opening_time': '06:00:00',
-                        'closing_time': '18:00:00',
-                        'entry_fee': 20
+                        'closing_time': '18:00:00'
                     },
                     {
                         'name': 'Gokarna Beach',
@@ -330,8 +325,7 @@ def bulk_add_data_view(request):
                         'latitude': 14.5479,
                         'longitude': 74.3188,
                         'opening_time': '00:00:00',
-                        'closing_time': '23:59:00',
-                        'entry_fee': 0
+                        'closing_time': '23:59:00'
                     },
                     {
                         'name': 'Coorg Coffee Plantations',
@@ -340,8 +334,7 @@ def bulk_add_data_view(request):
                         'latitude': 12.4244,
                         'longitude': 75.7382,
                         'opening_time': '07:00:00',
-                        'closing_time': '18:00:00',
-                        'entry_fee': 0
+                        'closing_time': '18:00:00'
                     }
                 ]
                 
