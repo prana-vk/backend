@@ -2,16 +2,20 @@
 
 Django REST API for Karnataka travel planning with smart itinerary generation.
 
+**🌐 Live API:** https://backend-k4x8.onrender.com
+
 ---
 
 ## 🚀 Quick Start
 
+### Local Development:
 ```bash
 cd backend
 python manage.py runserver
 ```
 
-**Server:** http://127.0.0.1:8000  
+**Local Server:** http://127.0.0.1:8000  
+**Production API:** https://backend-k4x8.onrender.com  
 **✅ No authentication required** - All 26 APIs are open!
 
 ---

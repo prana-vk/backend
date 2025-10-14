@@ -1,8 +1,9 @@
 # 🚀 ALL API ENDPOINTS - GI Yatra Backend
 
-## 📍 Base URL
+## 📍 Base URLs
 ```
-http://127.0.0.1:8000
+Local:      http://127.0.0.1:8000
+Production: https://backend-k4x8.onrender.com
 ```
 
 ## ✅ No Authentication Required!

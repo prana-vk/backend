@@ -79,7 +79,7 @@ DEBUG
 False
 
 ALLOWED_HOSTS
-giyatra-backend.onrender.com,localhost,127.0.0.1
+backend-k4x8.onrender.com,localhost,127.0.0.1
 
 DATABASE_URL
 postgres://giyatra_user:password@dpg-xxx.oregon-postgres.render.com/giyatra
@@ -134,16 +134,16 @@ Copy the generated key and use it for `SECRET_KEY` environment variable.
 
 ## 🧪 Step 7: Test Your API
 
-Your API will be available at: `https://giyatra-backend.onrender.com`
+Your API is live at: **https://backend-k4x8.onrender.com** 🎉
 
 ### Test Endpoints:
 
 ```bash
 # Test home endpoint
-curl https://giyatra-backend.onrender.com/api/gi-locations/
+curl https://backend-k4x8.onrender.com/api/gi-locations/
 
 # Test in browser
-https://giyatra-backend.onrender.com/api/gi-locations/
+https://backend-k4x8.onrender.com/api/gi-locations/
 ```
 
 ---
@@ -160,7 +160,7 @@ To access Django admin:
 python manage.py createsuperuser
 ```
 5. Follow prompts to create admin user
-6. Access admin at: `https://giyatra-backend.onrender.com/admin/`
+6. Access admin at: `https://backend-k4x8.onrender.com/admin/`
 
 ---
 
@@ -193,7 +193,7 @@ After deployment, update your frontend to use the production API:
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 // To:
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://giyatra-backend.onrender.com';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backend-k4x8.onrender.com';
 ```
 
 ### Update CORS in Render:
@@ -283,21 +283,21 @@ Before going live:
 
 After deployment, you'll have:
 
-- **API Base:** `https://giyatra-backend.onrender.com`
-- **Admin:** `https://giyatra-backend.onrender.com/admin/`
+- **API Base:** `https://backend-k4x8.onrender.com`
+- **Admin:** `https://backend-k4x8.onrender.com/admin/`
 - **API Docs:** Share updated API URLs with frontend team
 
 ### All Endpoints:
 
 ```
 GI Locations:
-  https://giyatra-backend.onrender.com/api/gi-locations/
+  https://backend-k4x8.onrender.com/api/gi-locations/
 
 Ad Locations:
-  https://giyatra-backend.onrender.com/api/ad-locations/
+  https://backend-k4x8.onrender.com/api/ad-locations/
 
 Trips:
-  https://giyatra-backend.onrender.com/api/trips/
+  https://backend-k4x8.onrender.com/api/trips/
 ```
 
 ---
@@ -353,7 +353,7 @@ Your Django backend is now live on Render! 🚀
 3. Update React app API base URL
 4. Deploy frontend
 
-**Your API:** `https://giyatra-backend.onrender.com`
+**Your API:** `https://backend-k4x8.onrender.com`
 
 ---
 
