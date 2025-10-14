@@ -78,11 +78,11 @@ WSGI_APPLICATION = 'giyatra_project.wsgi.application'
 
 
 # Database
-# Use PostgreSQL on Render, SQLite locally
+# Use PostgreSQL only - no SQLite fallback
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
-        conn_max_age=600
+        conn_max_age=600,
+        conn_health_checks=True,
     )
 }
 
@@ -154,6 +154,6 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # Admin Panel Settings - Set these in your environment variables
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@giyatra.com')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'GiYatra2025!')
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
