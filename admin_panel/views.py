@@ -42,12 +42,15 @@ def is_admin(user):
     return user.is_authenticated and (user.is_superuser or user.is_staff)
 
 
-def validate_env_credentials(username, password):
-    """Validate credentials against environment variables"""
+def validate_env_credentials(username, email, password):
+    """Validate all three credentials against environment variables"""
     env_username = os.environ.get('ADMIN_USERNAME', 'admin')
+    env_email = os.environ.get('ADMIN_EMAIL', 'admin@giyatra.com')
     env_password = os.environ.get('ADMIN_PASSWORD', 'GiYatra2025!')
     
-    return username == env_username and password == env_password
+    return (username == env_username and 
+            email == env_email and 
+            password == env_password)
 
 
 def admin_login_view(request):
@@ -60,11 +63,12 @@ def admin_login_view(request):
     
     if request.method == 'POST':
         username = request.POST.get('username')
+        email = request.POST.get('email')
         password = request.POST.get('password')
         
-        # First validate against environment variables
-        if not validate_env_credentials(username, password):
-            messages.error(request, 'Access denied. Invalid admin credentials.')
+        # Validate all three credentials against environment variables
+        if not validate_env_credentials(username, email, password):
+            messages.error(request, 'Access denied. All credentials (username, email, password) must match exactly.')
             return render(request, 'admin_panel/login.html')
         
         # Then authenticate with Django

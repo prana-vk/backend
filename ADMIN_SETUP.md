@@ -1,6 +1,6 @@
 # 🔐 Admin Panel Setup Instructions
 
-Your GI Yatra backend now has a **secure admin panel** that automatically creates admin users from environment variables.
+Your GI Yatra backend now has a **3-Factor Authentication system** that requires username, email, and password to match environment variables.
 
 ---
 
@@ -8,27 +8,29 @@ Your GI Yatra backend now has a **secure admin panel** that automatically create
 
 ### **Step 1: Set Environment Variables**
 
-Go to your Render service → **Environment** → Add these variables:
+Go to your Render service → **Environment** → Add these **3 variables**:
 
 ```
 ADMIN_USERNAME = admin
-ADMIN_EMAIL = your-email@gmail.com
+ADMIN_EMAIL = admin@giyatra.com
 ADMIN_PASSWORD = YourSecurePassword123!
 ```
 
 ### **Step 2: Access Admin Panel**
 
 1. **URL:** https://backend-k4x8.onrender.com/admin-panel/
-2. **Login** with the credentials you set above
-3. **Start adding locations!**
+2. **Enter ALL 3 credentials:** Username, Email, AND Password
+3. **All must match exactly** - 3-factor authentication
+4. **Start adding locations!**
 
 ---
 
 ## 🔒 **Security Features:**
 
+✅ **3-Factor Authentication** - Username, Email, AND Password must all match  
 ✅ **Environment-Based Auth** - Credentials stored securely in environment variables  
 ✅ **Auto User Creation** - Admin user created automatically if it doesn't exist  
-✅ **Double Validation** - Checks both environment variables AND Django auth  
+✅ **Triple Validation** - Checks all three credentials + Django auth  
 ✅ **No Database Dependencies** - Works even with empty database  
 
 ---
@@ -45,16 +47,18 @@ ADMIN_PASSWORD = YourSecurePassword123!
 
 ## 🎯 **How It Works:**
 
-1. **Login Page** validates credentials against environment variables
-2. **If valid**, creates Django user automatically (if doesn't exist)
-3. **Authenticates** and grants access to admin panel
-4. **All operations** are secured and logged
+1. **Login Page** asks for Username, Email, AND Password
+2. **Validates ALL THREE** against environment variables
+3. **If all match**, creates Django user automatically (if doesn't exist)
+4. **Authenticates** and grants access to admin panel
+5. **All operations** are secured and logged
 
 ---
 
 ## 🛡️ **Security Notes:**
 
-- Only users with correct environment credentials can access
+- **3-Factor Authentication**: Username + Email + Password must ALL match
+- Only users with ALL correct environment credentials can access
 - Admin user is automatically created with superuser permissions
 - All forms protected with CSRF tokens
 - Session management for secure logout
