@@ -20,10 +20,15 @@ from itinerary.models import TripPlan
 
 
 def ensure_admin_user_exists():
-    """Create admin user from environment variables if it doesn't exist"""
-    admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
-    admin_email = os.environ.get('ADMIN_EMAIL', 'admin@giyatra.com')
-    admin_password = os.environ.get('ADMIN_PASSWORD', 'GiYatra2025!')
+    """Create admin user from environment variables if it doesn't exist - STRICT MODE"""
+    admin_username = os.environ.get('ADMIN_USERNAME')
+    admin_email = os.environ.get('ADMIN_EMAIL')
+    admin_password = os.environ.get('ADMIN_PASSWORD')
+    
+    # Only create user if ALL environment variables are set
+    if not admin_username or not admin_email or not admin_password:
+        print("⚠️  Admin environment variables not set - user creation skipped")
+        return
     
     if not User.objects.filter(username=admin_username).exists():
         try:
@@ -43,10 +48,14 @@ def is_admin(user):
 
 
 def validate_env_credentials(username, email, password):
-    """Validate all three credentials against environment variables"""
-    env_username = os.environ.get('ADMIN_USERNAME', 'admin')
-    env_email = os.environ.get('ADMIN_EMAIL', 'admin@giyatra.com')
-    env_password = os.environ.get('ADMIN_PASSWORD', 'GiYatra2025!')
+    """Validate all three credentials against environment variables - NO FALLBACKS"""
+    env_username = os.environ.get('ADMIN_USERNAME')
+    env_email = os.environ.get('ADMIN_EMAIL')
+    env_password = os.environ.get('ADMIN_PASSWORD')
+    
+    # If any environment variable is missing, deny access
+    if not env_username or not env_email or not env_password:
+        return False
     
     return (username == env_username and 
             email == env_email and 
@@ -68,7 +77,11 @@ def admin_login_view(request):
         
         # Validate all three credentials against environment variables
         if not validate_env_credentials(username, email, password):
-            messages.error(request, 'Access denied. All credentials (username, email, password) must match exactly.')
+            # Check if environment variables are set
+            if not os.environ.get('ADMIN_USERNAME') or not os.environ.get('ADMIN_EMAIL') or not os.environ.get('ADMIN_PASSWORD'):
+                messages.error(request, 'Server configuration error: Admin environment variables not set.')
+            else:
+                messages.error(request, 'Access denied. Invalid credentials provided.')
             return render(request, 'admin_panel/login.html')
         
         # Then authenticate with Django
