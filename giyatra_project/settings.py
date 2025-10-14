@@ -151,3 +151,9 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True
+
+
+# Admin Panel Settings - Set these in your environment variables
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@giyatra.com')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'GiYatra2025!')

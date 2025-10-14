@@ -90,6 +90,15 @@ PYTHON_VERSION
 
 CORS_ALLOWED_ORIGINS
 https://your-frontend-domain.com,http://localhost:3000,http://localhost:5173
+
+ADMIN_USERNAME
+admin
+
+ADMIN_EMAIL
+admin@giyatra.com
+
+ADMIN_PASSWORD
+YourSecurePassword123!
 ```
 
 ### Optional Variables:

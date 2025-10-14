@@ -6,15 +6,35 @@ Protected admin interface for managing GI Yatra data
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 import json
+import os
 
 from home.models import GILocation
 from adver.models import AdLocation
 from itinerary.models import TripPlan
+
+
+def ensure_admin_user_exists():
+    """Create admin user from environment variables if it doesn't exist"""
+    admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+    admin_email = os.environ.get('ADMIN_EMAIL', 'admin@giyatra.com')
+    admin_password = os.environ.get('ADMIN_PASSWORD', 'GiYatra2025!')
+    
+    if not User.objects.filter(username=admin_username).exists():
+        try:
+            User.objects.create_superuser(
+                username=admin_username,
+                email=admin_email,
+                password=admin_password
+            )
+            print(f"✅ Admin user '{admin_username}' created successfully!")
+        except Exception as e:
+            print(f"❌ Error creating admin user: {str(e)}")
 
 
 def is_admin(user):
@@ -22,8 +42,19 @@ def is_admin(user):
     return user.is_authenticated and (user.is_superuser or user.is_staff)
 
 
+def validate_env_credentials(username, password):
+    """Validate credentials against environment variables"""
+    env_username = os.environ.get('ADMIN_USERNAME', 'admin')
+    env_password = os.environ.get('ADMIN_PASSWORD', 'GiYatra2025!')
+    
+    return username == env_username and password == env_password
+
+
 def admin_login_view(request):
-    """Admin login page"""
+    """Admin login page with environment variable validation"""
+    # Ensure admin user exists
+    ensure_admin_user_exists()
+    
     if request.user.is_authenticated and is_admin(request.user):
         return redirect('admin_dashboard')
     
@@ -31,13 +62,19 @@ def admin_login_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
+        # First validate against environment variables
+        if not validate_env_credentials(username, password):
+            messages.error(request, 'Access denied. Invalid admin credentials.')
+            return render(request, 'admin_panel/login.html')
+        
+        # Then authenticate with Django
         user = authenticate(request, username=username, password=password)
         if user and is_admin(user):
             login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
             return redirect('admin_dashboard')
         else:
-            messages.error(request, 'Invalid credentials or insufficient permissions.')
+            messages.error(request, 'Authentication failed. Please contact administrator.')
     
     return render(request, 'admin_panel/login.html')
 
