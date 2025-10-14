@@ -1,0 +1,105 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Add Ad Location - GI Yatra Admin{% endblock %}
+{% block page_title %}Add New Advertisement Location{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bullhorn me-2"></i>
+                    Add New Advertisement Location
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Business Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="form-text">e.g., The Grand Hotel Mysore</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="ad_type" class="form-label">Type *</label>
+                            <select class="form-select" id="ad_type" name="ad_type" required>
+                                <option value="">Select Type</option>
+                                {% for type in ad_types %}
+                                    <option value="{{ type }}">{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        <div class="form-text">Brief description of services offered</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="contact_info" class="form-label">Contact Information</label>
+                        <textarea class="form-control" id="contact_info" name="contact_info" rows="2"></textarea>
+                        <div class="form-text">Phone, email, website (one per line)</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="latitude" class="form-label">Latitude *</label>
+                            <input type="number" class="form-control" id="latitude" name="latitude" step="0.000001" required>
+                            <div class="form-text">e.g., 12.3052</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="longitude" class="form-label">Longitude *</label>
+                            <input type="number" class="form-control" id="longitude" name="longitude" step="0.000001" required>
+                            <div class="form-text">e.g., 76.6551</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Save Ad Location
+                        </button>
+                        <a href="{% url 'ad_locations' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to List
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Advertisement Types
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Hotel</h6>
+                        <p class="text-muted small">Hotels, resorts, homestays, lodges</p>
+                        
+                        <h6>Restaurant</h6>
+                        <p class="text-muted small">Restaurants, cafes, local eateries</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Guide</h6>
+                        <p class="text-muted small">Tour guides, travel agencies</p>
+                        
+                        <h6>Transport</h6>
+                        <p class="text-muted small">Car rentals, bus services, taxis</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

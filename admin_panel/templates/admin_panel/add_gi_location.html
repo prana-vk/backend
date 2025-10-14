@@ -1,0 +1,106 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Add GI Location - GI Yatra Admin{% endblock %}
+{% block page_title %}Add New GI Location{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    Add New GI Location
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Location Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="form-text">e.g., Mysore Palace</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="district" class="form-label">District *</label>
+                            <input type="text" class="form-control" id="district" name="district" required>
+                            <div class="form-text">e.g., Mysore</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        <div class="form-text">Brief description of the location</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="latitude" class="form-label">Latitude *</label>
+                            <input type="number" class="form-control" id="latitude" name="latitude" step="0.000001" required>
+                            <div class="form-text">e.g., 12.3052</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="longitude" class="form-label">Longitude *</label>
+                            <input type="number" class="form-control" id="longitude" name="longitude" step="0.000001" required>
+                            <div class="form-text">e.g., 76.6551</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="opening_time" class="form-label">Opening Time</label>
+                            <input type="time" class="form-control" id="opening_time" name="opening_time" value="09:00">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="closing_time" class="form-label">Closing Time</label>
+                            <input type="time" class="form-control" id="closing_time" name="closing_time" value="18:00">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="entry_fee" class="form-label">Entry Fee (₹)</label>
+                            <input type="number" class="form-control" id="entry_fee" name="entry_fee" min="0" value="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Location Image</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <div class="form-text">Upload an image of the location (optional)</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Save Location
+                        </button>
+                        <a href="{% url 'gi_locations' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to List
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Use Google Maps to find accurate latitude and longitude coordinates</li>
+                    <li>Entry fee should be in Indian Rupees (₹)</li>
+                    <li>Images should be in JPG, PNG, or WebP format</li>
+                    <li>Description helps users understand what makes this location special</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

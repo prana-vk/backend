@@ -16,7 +16,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-y0ur-s3cr3t-k3y-h3r3-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
+# Allow Render domains and local development
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'backend-k4x8.onrender.com,localhost,127.0.0.1').split(',')
+# Also allow .onrender.com subdomains
+if not DEBUG:
+    ALLOWED_HOSTS.append('.onrender.com')
 
 
 # Application definition
@@ -37,6 +41,7 @@ INSTALLED_APPS = [
     'home',
     'adver',
     'itinerary',
+    'admin_panel',
 ]
 
 MIDDLEWARE = [
