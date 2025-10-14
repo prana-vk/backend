@@ -1,0 +1,1 @@
+web: gunicorn giyatra_project.wsgi:application
