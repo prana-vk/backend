@@ -11,12 +11,24 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
+from functools import wraps
 import json
 import os
 
 from home.models import GILocation
 from adver.models import AdLocation
 from itinerary.models import TripPlan
+
+
+def admin_required(view_func):
+    """Decorator to check if admin is authenticated via session"""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get('admin_authenticated', False):
+            messages.warning(request, 'Please login to access the admin panel.')
+            return redirect('admin_login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def ensure_admin_user_exists():
@@ -43,8 +55,15 @@ def ensure_admin_user_exists():
 
 
 def is_admin(user):
-    """Check if user is admin or superuser"""
+    """Check if user is authenticated via session (env-based auth)"""
+    # This function is not used anymore with session-based auth
+    # Kept for compatibility but sessions are checked directly in views
     return user.is_authenticated and (user.is_superuser or user.is_staff)
+
+
+def is_admin_session(request):
+    """Check if admin is authenticated via session"""
+    return request.session.get('admin_authenticated', False)
 
 
 def validate_env_credentials(username, email, password):
@@ -63,11 +82,9 @@ def validate_env_credentials(username, email, password):
 
 
 def admin_login_view(request):
-    """Admin login page with environment variable validation"""
-    # Ensure admin user exists
-    ensure_admin_user_exists()
-    
-    if request.user.is_authenticated and is_admin(request.user):
+    """Admin login page with environment variable validation ONLY"""
+    # Check if already logged in via session
+    if request.session.get('admin_authenticated'):
         return redirect('admin_dashboard')
     
     if request.method == 'POST':
@@ -76,35 +93,31 @@ def admin_login_view(request):
         password = request.POST.get('password')
         
         # Validate all three credentials against environment variables
-        if not validate_env_credentials(username, email, password):
+        if validate_env_credentials(username, email, password):
+            # Set session flag for authenticated admin
+            request.session['admin_authenticated'] = True
+            request.session['admin_username'] = username
+            messages.success(request, f'Welcome back, {username}!')
+            return redirect('admin_dashboard')
+        else:
             # Check if environment variables are set
             if not os.environ.get('ADMIN_USERNAME') or not os.environ.get('ADMIN_EMAIL') or not os.environ.get('ADMIN_PASSWORD'):
                 messages.error(request, 'Server configuration error: Admin environment variables not set.')
             else:
                 messages.error(request, 'Access denied. Invalid credentials provided.')
-            return render(request, 'admin_panel/login.html')
-        
-        # Then authenticate with Django
-        user = authenticate(request, username=username, password=password)
-        if user and is_admin(user):
-            login(request, user)
-            messages.success(request, f'Welcome back, {user.username}!')
-            return redirect('admin_dashboard')
-        else:
-            messages.error(request, 'Authentication failed. Please contact administrator.')
     
     return render(request, 'admin_panel/login.html')
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
 def admin_logout_view(request):
     """Admin logout"""
-    logout(request)
+    # Clear session
+    request.session.flush()
     messages.success(request, 'You have been logged out successfully.')
     return redirect('admin_login')
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def admin_dashboard_view(request):
     """Admin dashboard with stats"""
     context = {
@@ -113,12 +126,12 @@ def admin_dashboard_view(request):
         'trips_count': TripPlan.objects.count(),
         'recent_gi_locations': GILocation.objects.order_by('-id')[:5],
         'recent_ad_locations': AdLocation.objects.order_by('-id')[:5],
-        'user': request.user
+        'admin_username': request.session.get('admin_username', 'Admin')
     }
     return render(request, 'admin_panel/dashboard.html', context)
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def gi_locations_view(request):
     """Manage GI Locations"""
     locations = GILocation.objects.all().order_by('-id')
@@ -133,7 +146,7 @@ def gi_locations_view(request):
     return render(request, 'admin_panel/gi_locations.html', context)
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def add_gi_location_view(request):
     """Add new GI Location"""
     if request.method == 'POST':
@@ -156,7 +169,7 @@ def add_gi_location_view(request):
     return render(request, 'admin_panel/add_gi_location.html')
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def edit_gi_location_view(request, location_id):
     """Edit GI Location"""
     location = get_object_or_404(GILocation, id=location_id)
@@ -184,7 +197,7 @@ def edit_gi_location_view(request, location_id):
     return render(request, 'admin_panel/edit_gi_location.html', context)
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def delete_gi_location_view(request, location_id):
     """Delete GI Location"""
     location = get_object_or_404(GILocation, id=location_id)
@@ -199,7 +212,7 @@ def delete_gi_location_view(request, location_id):
     return render(request, 'admin_panel/delete_gi_location.html', context)
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def ad_locations_view(request):
     """Manage Ad Locations"""
     locations = AdLocation.objects.all().order_by('-id')
@@ -214,7 +227,7 @@ def ad_locations_view(request):
     return render(request, 'admin_panel/ad_locations.html', context)
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def add_ad_location_view(request):
     """Add new Ad Location"""
     if request.method == 'POST':
@@ -238,7 +251,7 @@ def add_ad_location_view(request):
     return render(request, 'admin_panel/add_ad_location.html', context)
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def edit_ad_location_view(request, location_id):
     """Edit Ad Location"""
     location = get_object_or_404(AdLocation, id=location_id)
@@ -265,7 +278,7 @@ def edit_ad_location_view(request, location_id):
     return render(request, 'admin_panel/edit_ad_location.html', context)
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 def delete_ad_location_view(request, location_id):
     """Delete Ad Location"""
     location = get_object_or_404(AdLocation, id=location_id)
@@ -280,7 +293,7 @@ def delete_ad_location_view(request, location_id):
     return render(request, 'admin_panel/delete_ad_location.html', context)
 
 
-@user_passes_test(is_admin, login_url='/admin-panel/login/')
+@admin_required
 @csrf_exempt
 def bulk_add_data_view(request):
     """Bulk add sample data"""
