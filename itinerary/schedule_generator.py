@@ -56,37 +56,61 @@ def should_add_lunch_break(current_time: time, lunch_start: str = '13:00') -> bo
     return 690 <= current_mins < lunch_mins  # 690 = 11:30 in minutes
 
 
+import os
+import requests
+
 def optimize_route(start_point: Dict, locations: List[Dict]) -> List[Dict]:
     """
-    Optimize route using nearest neighbor algorithm
-    Returns ordered list of locations
+    Optimize route using Google Maps Directions API with waypoint optimization.
+    Returns ordered list of locations with travel info.
     """
     if not locations:
         return []
-    
-    ordered = []
-    remaining = locations.copy()
-    current = start_point
-    
-    while remaining:
-        # Find nearest location
-        nearest = None
-        min_distance = float('inf')
-        
-        for loc in remaining:
-            dist = calculate_distance(
-                current['latitude'], current['longitude'],
-                loc['latitude'], loc['longitude']
-            )
-            if dist < min_distance:
-                min_distance = dist
-                nearest = loc
-        
-        if nearest:
-            ordered.append(nearest)
-            remaining.remove(nearest)
-            current = nearest
-    
+
+    api_key = os.environ.get('GOOGLE_MAPS_API_KEY')
+    if not api_key:
+        raise Exception('Google Maps API key not set in environment variable GOOGLE_MAPS_API_KEY')
+
+    # Prepare waypoints string
+    waypoints = "|".join([
+        f"{loc['latitude']},{loc['longitude']}" for loc in locations
+    ])
+
+    url = (
+        "https://maps.googleapis.com/maps/api/directions/json?"
+        f"origin={start_point['latitude']},{start_point['longitude']}"
+        f"&destination={start_point['latitude']},{start_point['longitude']}"  # round trip
+        f"&waypoints=optimize:true|{waypoints}"
+        f"&mode=driving"
+        f"&key={api_key}"
+    )
+
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f"Google Maps API error: {response.status_code} {response.text}")
+    data = response.json()
+    if data.get('status') != 'OK':
+        raise Exception(f"Google Maps API error: {data.get('status')} {data.get('error_message')}")
+
+    # Get optimized order
+    waypoint_order = data['routes'][0]['waypoint_order']
+    legs = data['routes'][0]['legs']
+    polyline = data['routes'][0].get('overview_polyline', {}).get('points')
+
+    # Reorder locations
+    ordered = [locations[i] for i in waypoint_order]
+
+    # Attach travel info to each location
+    for idx, loc in enumerate(ordered):
+        leg = legs[idx]
+        loc['travel_distance_m'] = leg['distance']['value']
+        loc['travel_duration_s'] = leg['duration']['value']
+        loc['travel_distance_text'] = leg['distance']['text']
+        loc['travel_duration_text'] = leg['duration']['text']
+    # Optionally, attach polyline to the first location for map display
+    if ordered:
+        ordered[0]['route_polyline'] = polyline
+
     return ordered
 
 
