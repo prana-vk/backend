@@ -1,7 +1,7 @@
 """
 Schedule Generation Algorithm
-Google Maps Directions API is only called when /api/trips/{trip_id}/generate_schedule/ is POSTed (i.e., when 'Select Trip' is pressed in the frontend).
-No background or unnecessary invocation occurs.
+Generates optimized day-by-day itinerary using simple nearest-neighbor route optimization.
+No external API dependencies.
 """
 from datetime import datetime, timedelta, time
 from math import radians, cos, sin, asin, sqrt
@@ -54,72 +54,38 @@ def should_add_lunch_break(current_time: time, lunch_start: str = '13:00') -> bo
     return 690 <= current_mins < lunch_mins  # 690 = 11:30 in minutes
 
 
-import os
-import requests
-
-import logging
-
 def optimize_route(start_point: Dict, locations: List[Dict]) -> List[Dict]:
     """
-    Optimize route using Google Maps Directions API with waypoint optimization.
-    Returns ordered list of locations with travel info.
-    Adds timeout, waypoint limit, and error handling to prevent worker timeouts.
+    Simple nearest-neighbor route optimization (no external API required).
+    Returns ordered list of locations visiting nearest unvisited location each time.
     """
     if not locations:
         return []
-
-    api_key = os.environ.get('GOOGLE_MAPS_API_KEY')
-    if not api_key:
-        raise Exception('Google Maps API key not set in environment variable GOOGLE_MAPS_API_KEY')
-
-    # Google Maps Directions API supports max 23 waypoints
-    MAX_WAYPOINTS = 23
-    if len(locations) > MAX_WAYPOINTS:
-        logging.warning(f"Too many waypoints ({len(locations)}). Limiting to first {MAX_WAYPOINTS}.")
-        locations = locations[:MAX_WAYPOINTS]
-
-    waypoints = "|".join([
-        f"{loc['latitude']},{loc['longitude']}" for loc in locations
-    ])
-
-    url = (
-        "https://maps.googleapis.com/maps/api/directions/json?"
-        f"origin={start_point['latitude']},{start_point['longitude']}"
-        f"&destination={start_point['latitude']},{start_point['longitude']}"  # round trip
-        f"&waypoints=optimize:true|{waypoints}"
-        f"&mode=driving"
-        f"&key={api_key}"
-    )
-
-    try:
-        logging.warning(f"[optimize_route] Calling Google Maps Directions API for {len(locations)} waypoints...")
-        response = requests.get(url, timeout=20)  # 20 second timeout
-        if response.status_code != 200:
-            logging.error(f"Google Maps API error: {response.status_code} {response.text}")
-            return locations  # fallback: original order
-        data = response.json()
-        if data.get('status') != 'OK':
-            logging.error(f"Google Maps API error: {data.get('status')} {data.get('error_message')}")
-            return locations  # fallback: original order
-
-        waypoint_order = data['routes'][0]['waypoint_order']
-        legs = data['routes'][0]['legs']
-        polyline = data['routes'][0].get('overview_polyline', {}).get('points')
-
-        ordered = [locations[i] for i in waypoint_order]
-        for idx, loc in enumerate(ordered):
-            leg = legs[idx]
-            loc['travel_distance_m'] = leg['distance']['value']
-            loc['travel_duration_s'] = leg['duration']['value']
-            loc['travel_distance_text'] = leg['distance']['text']
-            loc['travel_duration_text'] = leg['duration']['text']
-        if ordered:
-            ordered[0]['route_polyline'] = polyline
-        logging.warning(f"[optimize_route] Google Maps API call successful.")
-        return ordered
-    except Exception as e:
-        logging.error(f"[optimize_route] Google Maps API request failed: {e}")
-        return locations  # fallback: original order
+    
+    ordered = []
+    remaining = locations.copy()
+    current = start_point
+    
+    while remaining:
+        # Find nearest location
+        nearest = None
+        min_distance = float('inf')
+        
+        for loc in remaining:
+            dist = calculate_distance(
+                current['latitude'], current['longitude'],
+                loc['latitude'], loc['longitude']
+            )
+            if dist < min_distance:
+                min_distance = dist
+                nearest = loc
+        
+        if nearest:
+            ordered.append(nearest)
+            remaining.remove(nearest)
+            current = nearest
+    
+    return ordered
 
 
 def split_locations_by_days(locations: List[Dict], num_days: int, available_mins_per_day: int) -> List[List[Dict]]:
