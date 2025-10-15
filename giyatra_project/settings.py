@@ -119,6 +119,7 @@ TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
+
 # ------------------------------------------------------------
 # STATIC & MEDIA FILES
 # ------------------------------------------------------------
@@ -130,6 +131,11 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# ------------------------------------------------------------
+# SITE URL (for absolute image URLs)
+# ------------------------------------------------------------
+SITE_URL = os.environ.get("SITE_URL", "https://backend-k4x8.onrender.com")
 
 # ------------------------------------------------------------
 # REST FRAMEWORK SETTINGS

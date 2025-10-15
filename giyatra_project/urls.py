@@ -14,6 +14,5 @@ urlpatterns = [
     path('api/', include('itinerary.urls')),
 ]
 
-# Serve media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files in both development and production (Render needs this)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
