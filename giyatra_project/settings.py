@@ -129,8 +129,13 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # WhiteNoise configuration
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+
+# Use persistent disk on Render if available
+if os.environ.get("RENDER") == "true" or os.path.exists("/opt/render/project/src/media"):
+    MEDIA_ROOT = "/opt/render/project/src/media"
+else:
+    MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
 
 # ------------------------------------------------------------
 # SITE URL (for absolute image URLs)
