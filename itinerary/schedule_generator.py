@@ -1,30 +1,14 @@
 """
 Schedule Generation Algorithm
-Generates optimized day-by-day itinerary with time slots
+Google Maps Directions API is only called when /api/trips/{trip_id}/generate_schedule/ is POSTed (i.e., when 'Select Trip' is pressed in the frontend).
+No background or unnecessary invocation occurs.
 """
 from datetime import datetime, timedelta, time
 from math import radians, cos, sin, asin, sqrt
 from typing import List, Dict, Any
 
 
-def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """
-    Calculate distance between two points using Haversine formula
-    Returns distance in kilometers
-    """
-    # Convert decimal degrees to radians
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-    
-    # Haversine formula
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a))
-    
-    # Radius of earth in kilometers
-    r = 6371
-    
-    return round(c * r, 2)
+## No local distance/route optimization is used. All optimization is via Google Maps Directions API.
 
 
 def add_minutes_to_time(time_obj: time, minutes: int) -> time:
