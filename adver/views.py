@@ -23,6 +23,12 @@ class AdLocationViewSet(viewsets.ModelViewSet):
             return AdLocationListSerializer
         return AdLocationSerializer
     
+    def get_serializer_context(self):
+        """Pass request to serializer for absolute image URLs"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
     def get_queryset(self):
         """
         Filter queryset based on query parameters
