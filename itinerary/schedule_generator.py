@@ -8,7 +8,21 @@ from math import radians, cos, sin, asin, sqrt
 from typing import List, Dict, Any
 
 
-## No local distance/route optimization is used. All optimization is via Google Maps Directions API.
+## Note: Google Maps Directions API provides travel times, but we need a simple distance function for fallback schedule generation.
+
+def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """
+    Calculate distance between two points using Haversine formula
+    Returns distance in kilometers (used for fallback schedule generation only)
+    """
+    from math import radians, cos, sin, asin, sqrt
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    r = 6371
+    return round(c * r, 2)
 
 
 def add_minutes_to_time(time_obj: time, minutes: int) -> time:

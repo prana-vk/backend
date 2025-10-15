@@ -1,7 +1,3 @@
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,10 +8,6 @@ from .serializers import GILocationSerializer, GILocationCreateSerializer
 
 
 class GILocationViewSet(viewsets.ModelViewSet):
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
     """
     ViewSet for GI Locations
     Supports: list, retrieve, create, update, delete
@@ -33,6 +25,12 @@ class GILocationViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update']:
             return GILocationCreateSerializer
         return GILocationSerializer
+    
+    def get_serializer_context(self):
+        """Pass request to serializer for absolute image URLs"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
     def get_queryset(self):
         """Filter queryset based on query parameters"""
