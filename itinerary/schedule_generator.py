@@ -59,10 +59,13 @@ def should_add_lunch_break(current_time: time, lunch_start: str = '13:00') -> bo
 import os
 import requests
 
+import logging
+
 def optimize_route(start_point: Dict, locations: List[Dict]) -> List[Dict]:
     """
     Optimize route using Google Maps Directions API with waypoint optimization.
     Returns ordered list of locations with travel info.
+    Adds timeout, waypoint limit, and error handling to prevent worker timeouts.
     """
     if not locations:
         return []
@@ -71,7 +74,12 @@ def optimize_route(start_point: Dict, locations: List[Dict]) -> List[Dict]:
     if not api_key:
         raise Exception('Google Maps API key not set in environment variable GOOGLE_MAPS_API_KEY')
 
-    # Prepare waypoints string
+    # Google Maps Directions API supports max 23 waypoints
+    MAX_WAYPOINTS = 23
+    if len(locations) > MAX_WAYPOINTS:
+        logging.warning(f"Too many waypoints ({len(locations)}). Limiting to first {MAX_WAYPOINTS}.")
+        locations = locations[:MAX_WAYPOINTS]
+
     waypoints = "|".join([
         f"{loc['latitude']},{loc['longitude']}" for loc in locations
     ])
@@ -85,33 +93,33 @@ def optimize_route(start_point: Dict, locations: List[Dict]) -> List[Dict]:
         f"&key={api_key}"
     )
 
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise Exception(f"Google Maps API error: {response.status_code} {response.text}")
-    data = response.json()
-    if data.get('status') != 'OK':
-        raise Exception(f"Google Maps API error: {data.get('status')} {data.get('error_message')}")
+    try:
+        response = requests.get(url, timeout=20)  # 20 second timeout
+        if response.status_code != 200:
+            logging.error(f"Google Maps API error: {response.status_code} {response.text}")
+            return locations  # fallback: original order
+        data = response.json()
+        if data.get('status') != 'OK':
+            logging.error(f"Google Maps API error: {data.get('status')} {data.get('error_message')}")
+            return locations  # fallback: original order
 
-    # Get optimized order
-    waypoint_order = data['routes'][0]['waypoint_order']
-    legs = data['routes'][0]['legs']
-    polyline = data['routes'][0].get('overview_polyline', {}).get('points')
+        waypoint_order = data['routes'][0]['waypoint_order']
+        legs = data['routes'][0]['legs']
+        polyline = data['routes'][0].get('overview_polyline', {}).get('points')
 
-    # Reorder locations
-    ordered = [locations[i] for i in waypoint_order]
-
-    # Attach travel info to each location
-    for idx, loc in enumerate(ordered):
-        leg = legs[idx]
-        loc['travel_distance_m'] = leg['distance']['value']
-        loc['travel_duration_s'] = leg['duration']['value']
-        loc['travel_distance_text'] = leg['distance']['text']
-        loc['travel_duration_text'] = leg['duration']['text']
-    # Optionally, attach polyline to the first location for map display
-    if ordered:
-        ordered[0]['route_polyline'] = polyline
-
-    return ordered
+        ordered = [locations[i] for i in waypoint_order]
+        for idx, loc in enumerate(ordered):
+            leg = legs[idx]
+            loc['travel_distance_m'] = leg['distance']['value']
+            loc['travel_duration_s'] = leg['duration']['value']
+            loc['travel_distance_text'] = leg['distance']['text']
+            loc['travel_duration_text'] = leg['duration']['text']
+        if ordered:
+            ordered[0]['route_polyline'] = polyline
+        return ordered
+    except Exception as e:
+        logging.error(f"Google Maps API request failed: {e}")
+        return locations  # fallback: original order
 
 
 def split_locations_by_days(locations: List[Dict], num_days: int, available_mins_per_day: int) -> List[List[Dict]]:
