@@ -19,7 +19,7 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label">Location Name *</label>
+                            <label for="name" class="form-label">Product Name *</label>
                             <input type="text" class="form-control" id="name" name="name" required>
                             <div class="form-text">e.g., Mysore Palace</div>
                         </div>
@@ -61,15 +61,15 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="image" class="form-label">Location Image</label>
+                        <label for="image" class="form-label">Product Image</label>
                         <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                        <div class="form-text">Upload an image of the location (optional)</div>
+                        <div class="form-text">Upload an image of the product (optional)</div>
                     </div>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>
-                            Save Location
+                            Save Product
                         </button>
                         <a href="{% url 'gi_locations' %}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-2"></i>
@@ -92,7 +92,7 @@
                 <ul class="mb-0">
                     <li>Use Google Maps to find accurate latitude and longitude coordinates</li>
                     <li>Images should be in JPG, PNG, or WebP format</li>
-                    <li>Description helps users understand what makes this location special</li>
+                    <li>Description helps users understand what makes this product special</li>
                     <li>Opening and closing times help visitors plan their visits better</li>
                 </ul>
             </div>
