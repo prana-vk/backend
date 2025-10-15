@@ -78,6 +78,7 @@ def optimize_route(start_point: Dict, locations: List[Dict]) -> List[Dict]:
     )
 
     try:
+        logging.warning(f"[optimize_route] Calling Google Maps Directions API for {len(locations)} waypoints...")
         response = requests.get(url, timeout=20)  # 20 second timeout
         if response.status_code != 200:
             logging.error(f"Google Maps API error: {response.status_code} {response.text}")
@@ -100,9 +101,10 @@ def optimize_route(start_point: Dict, locations: List[Dict]) -> List[Dict]:
             loc['travel_duration_text'] = leg['duration']['text']
         if ordered:
             ordered[0]['route_polyline'] = polyline
+        logging.warning(f"[optimize_route] Google Maps API call successful.")
         return ordered
     except Exception as e:
-        logging.error(f"Google Maps API request failed: {e}")
+        logging.error(f"[optimize_route] Google Maps API request failed: {e}")
         return locations  # fallback: original order
 
 

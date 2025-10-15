@@ -34,6 +34,10 @@ class TripPlanViewSet(viewsets.ModelViewSet):
         """
         Generate optimized schedule for the trip
         """
+        import logging
+        import time as pytime
+        logging.warning(f"[generate_schedule] Start for trip_id={pk}")
+        start_time = pytime.time()
         trip_plan = self.get_object()
         
         # Get selected locations
@@ -68,6 +72,10 @@ class TripPlanViewSet(viewsets.ModelViewSet):
                     'service_type': loc.service_type,
                 })
         
+        logging.warning(f"[generate_schedule] {len(locations)} locations to optimize")
+        if len(locations) > 23:
+            logging.error("[generate_schedule] Too many locations for Google Maps API (max 23 waypoints). Returning error.")
+            return Response({'error': 'Too many locations selected. Google Maps API supports a maximum of 23 waypoints.'}, status=status.HTTP_400_BAD_REQUEST)
         if not locations:
             return Response(
                 {'error': 'No locations selected for this trip'},
@@ -75,8 +83,14 @@ class TripPlanViewSet(viewsets.ModelViewSet):
             )
         
         # Generate schedule
-        schedule = generate_optimized_schedule(trip_plan, locations)
+        try:
+            schedule = generate_optimized_schedule(trip_plan, locations)
+        except Exception as e:
+            logging.error(f"[generate_schedule] Exception during schedule generation: {e}")
+            return Response({'error': f'Schedule generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+        elapsed = pytime.time() - start_time
+        logging.warning(f"[generate_schedule] Finished in {elapsed:.2f} seconds for trip_id={pk}")
         # Clear existing schedule
         TripDay.objects.filter(trip_plan=trip_plan).delete()
         
