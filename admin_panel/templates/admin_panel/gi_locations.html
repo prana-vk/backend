@@ -25,7 +25,7 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>District</th>
-                        <th>Entry Fee</th>
+                        <th>Quantity</th>
                         <th>Timings</th>
                         <th>Actions</th>
                     </tr>
@@ -41,7 +41,13 @@
                             {% endif %}
                         </td>
                         <td>{{ location.district }}</td>
-                        <td>₹{{ location.entry_fee }}</td>
+                        <td>
+                            {% if location.sellable_quantity %}
+                                <span class="badge bg-success">{{ location.sellable_quantity }} available</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Not for sale</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <small>{{ location.opening_time }} - {{ location.closing_time }}</small>
                         </td>

@@ -14,6 +14,11 @@ class GILocation(models.Model):
     opening_time = models.TimeField(null=True, blank=True)
     closing_time = models.TimeField(null=True, blank=True)
     typical_visit_duration = models.IntegerField(default=60, help_text="Duration in minutes")
+    sellable_quantity = models.IntegerField(
+        null=True, 
+        blank=True, 
+        help_text="Available quantity for sale (optional, leave empty if not sellable)"
+    )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

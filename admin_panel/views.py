@@ -151,6 +151,10 @@ def add_gi_location_view(request):
     """Add new GI Location"""
     if request.method == 'POST':
         try:
+            # Get sellable_quantity, convert to int or None
+            sellable_quantity = request.POST.get('sellable_quantity', '').strip()
+            sellable_quantity = int(sellable_quantity) if sellable_quantity else None
+            
             location = GILocation.objects.create(
                 name=request.POST.get('name'),
                 description=request.POST.get('description', ''),
@@ -159,6 +163,7 @@ def add_gi_location_view(request):
                 longitude=float(request.POST.get('longitude', 0)),
                 opening_time=request.POST.get('opening_time') or '09:00:00',
                 closing_time=request.POST.get('closing_time') or '18:00:00',
+                sellable_quantity=sellable_quantity,
                 image=request.FILES.get('image')
             )
             messages.success(request, f'GI Location "{location.name}" added successfully!')
@@ -183,6 +188,10 @@ def edit_gi_location_view(request, location_id):
             location.longitude = float(request.POST.get('longitude', 0))
             location.opening_time = request.POST.get('opening_time') or '09:00:00'
             location.closing_time = request.POST.get('closing_time') or '18:00:00'
+            
+            # Get sellable_quantity, convert to int or None
+            sellable_quantity = request.POST.get('sellable_quantity', '').strip()
+            location.sellable_quantity = int(sellable_quantity) if sellable_quantity else None
             
             if request.FILES.get('image'):
                 location.image = request.FILES.get('image')
