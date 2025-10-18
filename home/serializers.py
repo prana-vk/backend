@@ -13,7 +13,7 @@ class GILocationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'district', 'latitude', 'longitude',
             'description', 'image', 'image_url', 'opening_time', 'closing_time',
-            'typical_visit_duration', 'created_by', 'created_by_username',
+            'typical_visit_duration', 'sellable_quantity', 'created_by', 'created_by_username',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_by', 'created_at', 'updated_at']
@@ -40,7 +40,7 @@ class GILocationListSerializer(serializers.ModelSerializer):
         model = GILocation
         fields = [
             'id', 'name', 'district', 'latitude', 'longitude',
-            'image', 'typical_visit_duration'
+            'image', 'typical_visit_duration', 'sellable_quantity'
         ]
 
 
@@ -52,7 +52,7 @@ class GILocationCreateSerializer(serializers.ModelSerializer):
         fields = [
             'name', 'district', 'latitude', 'longitude',
             'description', 'image', 'opening_time', 'closing_time',
-            'typical_visit_duration'
+            'typical_visit_duration', 'sellable_quantity'
         ]
     
     def validate(self, data):
@@ -68,6 +68,11 @@ class GILocationCreateSerializer(serializers.ModelSerializer):
         # Validate typical visit duration
         if data.get('typical_visit_duration', 60) < 15:
             raise serializers.ValidationError("Visit duration must be at least 15 minutes")
+        
+        # Validate sellable_quantity when provided
+        sq = data.get('sellable_quantity', None)
+        if sq is not None and sq < 0:
+            raise serializers.ValidationError("Sellable quantity must be a non-negative integer or omitted")
         
         return data
 
