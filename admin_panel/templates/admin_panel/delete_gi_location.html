@@ -31,6 +31,12 @@
                                 <strong>Timings:</strong> 
                                 {{ location.opening_time }} - {{ location.closing_time }}
                             </p>
+                            {% if location.sellable_quantity %}
+                            <p class="card-text">
+                                <strong>Sellable Quantity:</strong> 
+                                <span class="badge bg-success">{{ location.sellable_quantity }} available</span>
+                            </p>
+                            {% endif %}
                             {% if location.image %}
                             <div class="mt-2">
                                 <img src="{{ location.image.url }}" alt="{{ location.name }}" 
