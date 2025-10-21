@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/', include('home.urls')),
     path('api/', include('adver.urls')),
     path('api/', include('itinerary.urls')),
+    path('api/', include('accounts.urls')),
 ]
 
 # Serve media files in both development and production (Render needs this)
