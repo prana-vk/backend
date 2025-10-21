@@ -11,18 +11,20 @@ class SignupView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get('username', '').strip()
         email = request.data.get('email', '').strip()
         password = request.data.get('password', '').strip()
 
-        if not username or not password:
-            return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-        if User.objects.filter(username=username).exists():
-            return Response({'error': 'Username already taken'}, status=status.HTTP_400_BAD_REQUEST)
-        if email and User.objects.filter(email=email).exists():
+        if not email or not password:
+            return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=email).exists():
             return Response({'error': 'Email already in use'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(username=username, email=email or None, password=password)
+        # Use email as username for simplicity
+        username = email
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Email already in use'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.create_user(username=username, email=email, password=password)
         token, _ = Token.objects.get_or_create(user=user)
         return Response({'message': 'Signup successful', 'token': token.key}, status=status.HTTP_201_CREATED)
 
@@ -31,9 +33,10 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get('username', '').strip()
+        email = request.data.get('email', '').strip()
         password = request.data.get('password', '').strip()
-        user = authenticate(username=username, password=password)
+        # Use email as username since we store email as username
+        user = authenticate(username=email, password=password)
         if not user:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         token, _ = Token.objects.get_or_create(user=user)
