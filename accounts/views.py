@@ -30,24 +30,21 @@ class SignupView(APIView):
     def post(self, request):
         email = request.data.get('email', '').strip()
         password = request.data.get('password', '').strip()
-
         if not email or not password:
             return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
         # Use email as username for simplicity
         username = email
 
-        # To avoid revealing whether an email is already registered, return a
-        # generic response for both existing and new emails. If the email is
-        # available, create the user and return the token in the same 200
-        # response shape (so callers cannot distinguish by status code).
-        if User.objects.filter(email=email).exists() or User.objects.filter(username=username).exists():
-            # Do not reveal existence — return generic success-like message
-            return Response({'message': 'If this email is available, signup will be completed.'}, status=status.HTTP_200_OK)
+        # New behavior: explicitly check for existing user and return an error
+        # if the email is already registered.
+        if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username__iexact=username).exists():
+            return Response({'error': 'Sorry, user already exists'}, status=status.HTTP_409_CONFLICT)
 
         # Create the user and return token
         user = User.objects.create_user(username=username, email=email, password=password)
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({'message': 'Signup successful', 'token': token.key}, status=status.HTTP_200_OK)
+        return Response({'message': 'Signup successful', 'token': token.key}, status=status.HTTP_201_CREATED)
 
 
 class LoginView(APIView):
@@ -59,6 +56,12 @@ class LoginView(APIView):
 
         if not email or not password:
             return Response({'error': 'Email and password required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Explicitly check whether the user exists and return a clear error
+        # if not found. This changes behavior from a generic "invalid"
+        # response to a direct "user does not exist" message as requested.
+        if not User.objects.filter(email__iexact=email).exists():
+            return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
         # Check or create LoginAttempt tracker
         attempt, _ = LoginAttempt.objects.get_or_create(email=email)
@@ -289,8 +292,9 @@ class SignupOTPRequestAPI(APIView):
         # Do not reveal whether the email is already registered. If the
         # account exists, behave as if the request succeeded but don't create
         # an OTP. If the account does not exist, create/send an OTP as usual.
-        if User.objects.filter(email=email).exists():
-            return Response({'message': 'If this email is available, a verification code was sent.'}, status=status.HTTP_200_OK)
+        # If the email already exists, return an explicit error per new behavior.
+        if User.objects.filter(email__iexact=email).exists():
+            return Response({'error': 'Sorry, user already exists'}, status=status.HTTP_409_CONFLICT)
 
         now = timezone.now()
         otp = SignupOTP.objects.filter(email=email, used=False).order_by('-created_at').first()
@@ -324,11 +328,10 @@ class SignupOTPConfirmAPI(APIView):
         if not email or not code or not password:
             return Response({'error': 'email, otp and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # To avoid leaking account existence, if the email already exists,
-        # return a generic success-like response (no token). If the email is
-        # available, continue with OTP verification and create the account.
-        if User.objects.filter(email=email).exists():
-            return Response({'message': 'If this email is available, signup successful.'}, status=status.HTTP_200_OK)
+        # If a user with this email already exists, return an explicit conflict
+        # so callers know the account cannot be created.
+        if User.objects.filter(email__iexact=email).exists():
+            return Response({'error': 'Sorry, user already exists'}, status=status.HTTP_409_CONFLICT)
 
         otp = SignupOTP.objects.filter(email=email, used=False).order_by('-created_at').first()
         if not otp:
