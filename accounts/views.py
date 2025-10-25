@@ -92,10 +92,10 @@ class PasswordResetRequestView(APIView):
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
-            # don't reveal existence
-            return Response({'message': 'If this email exists, a password reset link has been sent.'})
+            # New behavior: explicitly inform caller that email is not registered
+            return Response({'error': 'This email is not found in database'}, status=status.HTTP_404_NOT_FOUND)
 
         # generate token & uid
         token = default_token_generator.make_token(user)
@@ -364,9 +364,10 @@ class PasswordResetOTPRequestAPI(APIView):
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
-            user = None
+            # New behavior: return explicit error when email not registered
+            return Response({'error': 'This email is not found in database'}, status=status.HTTP_404_NOT_FOUND)
 
         now = timezone.now()
         otp = PasswordResetOTP.objects.filter(email=email, used=False).order_by('-created_at').first()
