@@ -80,6 +80,31 @@ class LoginView(APIView):
         # Successful login: reset attempts
         attempt.reset()
         token, _ = Token.objects.get_or_create(user=user)
+        # Send a brief welcome-back email (best-effort) immediately after login.
+        try:
+            app_url = getattr(settings, 'FRONTEND_URL', 'https://gi-yatra-frontend.vercel.app')
+            subject = 'Welcome back to GI Yatra'
+            plain = (
+                f"Hi {user.email},\n\n"
+                "Thanks for signing in to GI Yatra! Visit the app to continue planning your trips: "
+                f"{app_url}\n\nHappy travels,\nThe GI Yatra Team"
+            )
+            html = f"""
+<p>Hi {user.email},</p>
+<p>Thanks for signing in to GI Yatra! Open the app to continue planning your trips.</p>
+<p><a href="{app_url}">Open GI Yatra</a></p>
+<p>Happy travels,<br/>The GI Yatra Team</p>
+"""
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', getattr(settings, 'EMAIL_HOST_USER', None))
+            try:
+                send_mail(subject, plain, from_email, [user.email], html_message=html, fail_silently=False)
+            except Exception:
+                # Do not block login if email sending fails
+                pass
+        except Exception:
+            # Defensive: ensure any unexpected error does not affect login response
+            pass
+
         return Response({'message': 'Login successful', 'token': token.key})
 
 
