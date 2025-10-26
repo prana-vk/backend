@@ -44,6 +44,34 @@ class SignupView(APIView):
         # Create the user and return token
         user = User.objects.create_user(username=username, email=email, password=password)
         token, _ = Token.objects.get_or_create(user=user)
+        # Send a welcome email (best-effort)
+        try:
+            app_url = getattr(settings, 'FRONTEND_URL', 'https://gi-yatra-frontend.vercel.app')
+            subject = 'Welcome to GI Yatra'
+            plain = (
+                f"Hi {user.email},\n\n"
+                "Thanks for signing up for GI Yatra! Visit the app to start planning your trips: "
+                f"{app_url}\n\nHappy travels,\nThe GI Yatra Team"
+            )
+            html = f"""
+<p>Hi {user.email},</p>
+<p>Thanks for joining GI Yatra! Here’s what you can do right away:</p>
+<ul>
+  <li><strong>Save places:</strong> Add attractions, hotels, restaurants, and custom stops.</li>
+  <li><strong>Manage services:</strong> Keep bookings and vendors tied to your trip.</li>
+  <li><strong>Map-first planning:</strong> Pick stops visually and preview routes on an interactive map.</li>
+</ul>
+<p><a href="{app_url}">Start planning now</a></p>
+<p>Happy travels,<br/>The GI Yatra Team</p>
+"""
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', getattr(settings, 'EMAIL_HOST_USER', None))
+            try:
+                send_mail(subject, plain, from_email, [user.email], html_message=html, fail_silently=False)
+            except Exception:
+                pass
+        except Exception:
+            pass
+
         return Response({'message': 'Signup successful', 'token': token.key}, status=status.HTTP_201_CREATED)
 
 
@@ -374,6 +402,33 @@ class SignupOTPConfirmAPI(APIView):
         user = User.objects.create_user(username=email, email=email, password=password)
         token, _ = Token.objects.get_or_create(user=user)
         otp.mark_used()
+        # Send a welcome email after OTP-confirmed signup (best-effort)
+        try:
+            app_url = getattr(settings, 'FRONTEND_URL', 'https://gi-yatra-frontend.vercel.app')
+            subject = 'Welcome to GI Yatra'
+            plain = (
+                f"Hi {user.email},\n\n"
+                "Thanks for joining GI Yatra! Visit the app to start planning your trips: "
+                f"{app_url}\n\nHappy travels,\nThe GI Yatra Team"
+            )
+            html = f"""
+<p>Hi {user.email},</p>
+<p>Thanks for joining GI Yatra! Here’s what you can do right away:</p>
+<ul>
+  <li><strong>Save places:</strong> Add attractions, hotels, restaurants, and custom stops.</li>
+  <li><strong>Manage services:</strong> Keep bookings and vendors tied to your trip.</li>
+  <li><strong>Map-first planning:</strong> Pick stops visually and preview routes on an interactive map.</li>
+</ul>
+<p><a href="{app_url}">Start planning now</a></p>
+<p>Happy travels,<br/>The GI Yatra Team</p>
+"""
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', getattr(settings, 'EMAIL_HOST_USER', None))
+            try:
+                send_mail(subject, plain, from_email, [user.email], html_message=html, fail_silently=False)
+            except Exception:
+                pass
+        except Exception:
+            pass
         return Response({'message': 'Signup successful', 'token': token.key}, status=status.HTTP_201_CREATED)
 
 
